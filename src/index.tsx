@@ -1,0 +1,31 @@
+import React from "react";
+import ReactDOM from "react-dom/client"; // Use createRoot for React 18
+import Popup from "./components/Popup";
+import "./components/Popup.css"; // Ensure CSS is loaded
+
+// Function to render the Popup component when the root element is present
+const renderPopup = () => {
+  const rootElement = document.getElementById("popup-root");
+  if (rootElement) {
+    console.log("Rendering React Popup..."); // Debugging message
+    const root = ReactDOM.createRoot(rootElement); // Use createRoot for React 18
+    root.render(<Popup />);
+  } else {
+    console.log("Popup root not found!"); // This will tell us if the root element is missing
+  }
+};
+
+// MutationObserver to check for the addition of the #popup-root element
+const observer = new MutationObserver(() => {
+  const rootElement = document.getElementById("popup-root");
+  if (rootElement) {
+    observer.disconnect(); // Stop observing once the root is found
+    renderPopup();
+  }
+});
+
+// Start observing for changes in the document to detect #popup-root
+observer.observe(document.body, { childList: true, subtree: true });
+
+// In case #popup-root is already present (just to cover all bases)
+renderPopup();
