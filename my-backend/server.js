@@ -160,11 +160,11 @@ app.post('/api/check-content', (req, res) => {
 });
 
 app.post('/api/scrape', async (req, res) => {
-  const { task_name, url, media_source, topic, subtopic, thumbnail_url } = req.body;
+  const { task_name, url, media_source, topic, subtopic, users, details, thumbnail_url } = req.body;
 
   // Step 1: Insert the task without the thumbnail path
-  const query = "INSERT INTO tasks (task_name, url, media_source, topic, subtopic) VALUES (?, ?, ?, ?, ?)";
-  db.query(query, [task_name, url, media_source, topic, subtopic], async (err, result) => {
+  const query = "INSERT INTO tasks (task_name, url, media_source, topic, subtopic, users, details) VALUES (?, ?, ?, ?, ?,?,?)";
+  db.query(query, [task_name, url, media_source, topic, subtopic,users,details], async (err, result) => {
       if (err) {
           console.error("Error inserting task:", err);
           return res.status(500).send("Database error");

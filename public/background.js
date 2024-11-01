@@ -122,8 +122,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                             const images = document.querySelectorAll("img");
                            
                             images.forEach((img) => {
-                                if (img.naturalWidth && img.naturalHeight) {
-                                    const area = img.naturalWidth * img.naturalHeight;
+                                if (img.offsetHeight && img.offsetWidth && img.offsetParent !== null) {
+                                    const area = img.offsetHeight * img.offsetWidth;
                                     if (area > maxArea) {
                                         maxArea = area;
                                         chosenImage = img;

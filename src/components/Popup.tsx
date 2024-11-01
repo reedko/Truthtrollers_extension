@@ -28,9 +28,7 @@ const Popup: React.FC = () => {
     setIsContentDetected(detected);
     setIsInDatabase(task !== null);
   }, []);
-  console.log("BBBBBBBBBB");
-  console.log(task);
-  console.log("GGGGGGGGGG");
+
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const handleCaptureImage = () => {
@@ -55,8 +53,10 @@ const Popup: React.FC = () => {
       url: pageUrl,
       media_source: "Auto-detected source",
       topic: "General",
-      subtopic: "N/A",
-      thumbnail_url: imageUrl, // Send the captured image URL
+      subtopic: "N/A", // Send the captured image URL
+      users: "",
+      details: pageUrl,
+      thumbnail_url: imageUrl,
     };
 
     try {
