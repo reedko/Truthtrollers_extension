@@ -4,27 +4,38 @@
   "version": "1.0",
   "description": "Detects specific strings in YouTube URLs or page content",
   "permissions": ["activeTab", "scripting", "tabs"],
-  "icons": {
-    "16": "icons/icon-16.png",
-    "48": "icons/icon-48.png",
-    "128": "icons/icon-128.png"},
   "host_permissions": [
-    "https://*.youtube.com/*",  
+    "https://*.youtube.com/*",
     "http://*/*",
-    "https://*/*"
+    "https://*/*",
+    "http://localhost/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon-16.png",
+      "48": "assets/icons/icon-48.png",
+      "128": "assets/icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["images/meter3.png"],
+      "resources": ["assets/icons/icon-16.png", "assets/icons/icon-48.png", "assets/icons/icon-128.png", "assets/images/meter3.png"],
       "matches": ["<all_urls>"]
     }
   ]
