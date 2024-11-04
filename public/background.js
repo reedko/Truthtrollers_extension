@@ -2,19 +2,19 @@
 // background.js
 
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === "getCurrentTabUrl") {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs.length > 0 && tabs[0].url) {
                 sendResponse({ url: tabs[0].url });
             } else {
-                sendResponse({ error: "Could not get the current tab's URL" });
+                console.error("No active tab or URL found");
+                sendResponse({ error: "No active tab or URL found" });
             }
         });
-        return true; // Keeps the sendResponse channel open for async operations
+        return true; // Keeps the sendResponse channel open for async responses
     }
 });
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "checkContent") {
       // Get the active tab's URL
@@ -44,11 +44,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         window.isContentDetected = isDetected;
                     },
                     args: [data.task, url, data.task.progress === "Completed"]
-                }, () => {
+                }, () => {  
+                    if (chrome.runtime.lastError) {
+                    console.error("Error during executeScript:", chrome.runtime.lastError.message);
+                } else {
+                    console.log("Script executed successfully in tab context");
+                    if (data.task.progress === "Completed"){
                     chrome.scripting.executeScript({
                         target: { tabId: sender.tab.id },
                         files: ["popup.js"], // Ensure this file exists
                     });
+                }
+            }
                 });
             } else {
 //no data found, return the url

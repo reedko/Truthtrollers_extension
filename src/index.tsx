@@ -7,6 +7,13 @@ import "./components/Popup.css"; // Ensure CSS is loaded
 const renderPopup = () => {
   const rootElement = document.getElementById("popup-root");
   if (rootElement) {
+    // Apply styles directly to force the root div to have size
+    rootElement.style.position = "relative";
+    rootElement.style.top = "0";
+    rootElement.style.right = "0";
+
+    rootElement.style.zIndex = "9999";
+    rootElement.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
     console.log("Rendering React Popup..."); // Debugging message
     const root = ReactDOM.createRoot(rootElement); // Use createRoot for React 18
     root.render(<Popup />);

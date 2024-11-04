@@ -24,7 +24,9 @@ const Popup: React.FC = () => {
     });
     const currentTask = (window as any).currentTabTask || null;
     const detected = (window as any).isContentDetected || false;
+
     setTask(currentTask);
+
     setIsContentDetected(detected);
     setIsInDatabase(task !== null);
   }, []);
@@ -73,7 +75,7 @@ const Popup: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="popup-box">
       {isContentDetected ? (
         <>
           <div className="popup-box-text">TruthTroll at 80% FALSE</div>
@@ -103,18 +105,43 @@ const Popup: React.FC = () => {
             </div>
           </div>
         </>
-      ) : (
+      ) : task ? (
         <>
           <div className="popup-box-text">
             {task?.task_name} at {task?.progress}
           </div>
           <Image
-            src={`../assets/images/tasks/task_id_${task?.task_id}.png`} // Assuming thumbnail images are named as task_id_x.png
+            src={chrome.runtime.getURL(task.thumbnail)} // Assuming thumbnail images are named as task_id_x.png
             alt="Thumbnail"
             borderRadius="md"
             boxSize="200px"
             objectFit="cover"
           />
+          <div className="popup-buttons">
+            <a
+              href={task?.details || "#"}
+              className="popup-button"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div className="popup-button-text">Details</div>
+            </a>
+            <div
+              className="popup-button"
+              onClick={() => {
+                // Close the popup by removing the root element
+                const popupRoot = document.getElementById("popup-root");
+                if (popupRoot) {
+                  popupRoot.remove();
+                }
+              }}
+            >
+              <div className="popup-button-text">Close</div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
           <div className="popup-button" onClick={handleScrape}>
             <div className="popup-button-text">Scrape</div>
           </div>

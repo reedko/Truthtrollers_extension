@@ -32,7 +32,7 @@
     }
   }
   .popup-box {
-    position: fixed; /* Fixed position relative to the viewport */
+    
     top: 100px;
     right: 20px;
     padding: 5px 10px;
@@ -42,9 +42,8 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 1000; /* Make sure it is above the video */
     animation: fadeIn 0.5s ease-in-out; /* Fade-in effect with 0.5s duration */
-    max-width: 200px;
-    max-height: 200px;
-    width: 100%; /* Let it take full width of the parent */
+ 
+    
     height: 100%; /* Let it expand based on content */
     overflow-y: auto; /* Enable scrolling if content exceeds height */
   }
