@@ -1,8 +1,11 @@
 import "./Popup.css";
+import meter from "../../public/assets/images/meter3.png";
 import resizeImage from "../services/image-url";
+import useFetchTasks from "../hooks/useFetchTasks"; // Fetch tasks hook
 import { Image } from "@chakra-ui/react";
 import { Task } from "../entities/useTask";
 import React, { useEffect, useState } from "react";
+import TaskCard from "./TaskCard";
 
 const Popup: React.FC = () => {
   const [isInDatabase, setIsInDatabase] = useState(false);
@@ -11,31 +14,21 @@ const Popup: React.FC = () => {
   const [isContentDetected, setIsContentDetected] = useState<boolean>(false);
 
   useEffect(() => {
-    // Directly read from the global `window` object
+    // Check for global variables set by background.js
+    chrome.runtime.sendMessage({ action: "getCurrentTabUrl" }, (response) => {
+      if (response.url) {
+        setPageUrl(response.url);
+      } else {
+        console.error(response.error || "Unknown error retrieving URL");
+      }
+    });
     const currentTask = (window as any).currentTabTask || null;
     const detected = (window as any).isContentDetected || false;
-    const currentUrl = (window as any).currentTabUrl || false;
-    if (currentTask) {
-      setTask(currentTask);
-      setPageUrl(currentUrl);
-      setIsContentDetected(detected);
 
-      console.log("Task loaded from global context:", currentTask);
-    } else {
-      console.log("No task found in global context. Checking content...");
-      // If no task is found in the global context, request from background.js
-      chrome.runtime.sendMessage(
-        { action: "checkContent", url: window.location.href },
-        (response) => {
-          if (response && response.task) {
-            setTask(response.task);
-            setPageUrl(response.url);
-            setIsContentDetected(false);
-            console.log("Task received from background:", response.task);
-          }
-        }
-      );
-    }
+    setTask(currentTask);
+
+    setIsContentDetected(detected);
+    setIsInDatabase(task !== null);
   }, []);
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);

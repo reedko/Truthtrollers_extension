@@ -35,37 +35,33 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const data = await response.json();
 
         if (data.exists) {
-          const isDetected = data.task.progress === "Completed";
-          if (isDetected) {
-            chrome.scripting.executeScript(
-              {
-                target: { tabId: sender.tab.id },
-                func: (task, url, isDetected) => {
-                  window.currentTabTask = task; // Store the task record globally
-                  window.currentTabUrl = url;
-                  window.isContentDetected = isDetected;
-                },
-                args: [data.task, url, isDetected],
+          chrome.scripting.executeScript(
+            {
+              target: { tabId: sender.tab.id },
+              func: (task, url, isDetected) => {
+                window.currentTabTask = task; // Store the task record globally
+                window.currentTabUrl = url;
+                window.isContentDetected = isDetected;
               },
-              () => {
-                if (chrome.runtime.lastError) {
-                  console.error(
-                    "Error during executeScript:",
-                    chrome.runtime.lastError.message
-                  );
-                } else {
-                  console.log("Script executed successfully in tab context");
-
+              args: [data.task, url, data.task.progress === "Completed"],
+            },
+            () => {
+              if (chrome.runtime.lastError) {
+                console.error(
+                  "Error during executeScript:",
+                  chrome.runtime.lastError.message
+                );
+              } else {
+                console.log("Script executed successfully in tab context");
+                if (data.task.progress === "Completed") {
                   chrome.scripting.executeScript({
                     target: { tabId: sender.tab.id },
                     files: ["popup.js"], // Ensure this file exists
                   });
                 }
               }
-            );
-          } else {
-            sendResponse({ task: data.task, url: url });
-          }
+            }
+          );
         } else {
           //no data found, return the url
         }

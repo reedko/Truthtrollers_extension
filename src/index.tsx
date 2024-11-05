@@ -8,6 +8,13 @@ const renderPopup = () => {
   const rootElement = document.getElementById("popup-root");
   if (rootElement) {
     console.log("Rendering React Popup..."); // Debugging message
+    rootElement.style.position = "relative";
+    rootElement.style.top = "0";
+    rootElement.style.right = "0";
+    rootElement.style.minWidth = "220px";
+    rootElement.style.minHeight = "50px";
+    rootElement.style.zIndex = "9999";
+    rootElement.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
     const root = ReactDOM.createRoot(rootElement); // Use createRoot for React 18
     root.render(<Popup />);
   } else {
