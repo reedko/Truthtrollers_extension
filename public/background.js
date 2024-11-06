@@ -1,5 +1,8 @@
 // Listen for messages from content.js
 // background.js
+chrome.action.onClicked.addListener((tab) => {
+  chrome.tabs.sendMessage(tab.id, { action: "toggleTaskCard" });
+});
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.action === "getCurrentTabUrl") {
@@ -18,6 +21,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "checkContent") {
     // Get the active tab's URL
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+      if (chrome.runtime.lastError) {
+        console.error("Error querying tabs:", chrome.runtime.lastError.message);
+        return;
+      }
+      if (tabs.length === 0 || !tabs[0].url) {
+        console.error("No active tab or URL found.");
+        return;
+      }
+
       const url = tabs[0]?.url;
       if (!url) return;
 
@@ -33,42 +45,48 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         );
 
         const data = await response.json();
+        const isDetected = data.exists && data.task.progress === "Completed";
+        const task = data.exists ? data.task : null;
 
-        if (data.exists) {
-          const isDetected = data.task.progress === "Completed";
-          if (isDetected) {
-            chrome.scripting.executeScript(
-              {
-                target: { tabId: sender.tab.id },
-                func: (task, url, isDetected) => {
-                  window.currentTabTask = task; // Store the task record globally
-                  window.currentTabUrl = url;
-                  window.isContentDetected = isDetected;
-                },
-                args: [data.task, url, isDetected],
-              },
-              () => {
-                if (chrome.runtime.lastError) {
-                  console.error(
-                    "Error during executeScript:",
-                    chrome.runtime.lastError.message
-                  );
-                } else {
-                  console.log("Script executed successfully in tab context");
+        // Execute script to set globals and create popup-root if it doesn't exist
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: sender.tab.id },
+            func: (task, url, isDetected) => {
+              // Set global variables in the tab context
+              window.currentTabTask = task;
+              window.currentTabUrl = url;
+              window.isContentDetected = isDetected;
 
-                  chrome.scripting.executeScript({
-                    target: { tabId: sender.tab.id },
-                    files: ["popup.js"], // Ensure this file exists
-                  });
-                }
+              // Check if the popup-root div exists, if not, create it
+              let popupRoot = document.getElementById("popup-root");
+              if (!popupRoot) {
+                popupRoot = document.createElement("div");
+                popupRoot.id = "popup-root";
+                popupRoot.className = isDetected
+                  ? "task-card-visible"
+                  : "task-card-hidden"; // Initially hidden
+                document.body.appendChild(popupRoot);
               }
-            );
-          } else {
-            sendResponse({ task: data.task, url: url });
+            },
+            args: [task, url, isDetected],
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              console.error(
+                "Error during executeScript:",
+                chrome.runtime.lastError.message
+              );
+            } else {
+              console.log("Globals set and popup-root created if needed");
+
+              chrome.scripting.executeScript({
+                target: { tabId: sender.tab.id },
+                files: ["popup.js"], // Ensure this file exists
+              });
+            }
           }
-        } else {
-          //no data found, return the url
-        }
+        );
       } catch (error) {
         console.error("Error checking content:", error);
       }
@@ -77,15 +95,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true; // Keeps the sendResponse channel open for async operations
   }
 });
-
-// content.js
-/* chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      console.log("Capturing Image");
-      if (message.action === "captureImage") {
-          const img = document.querySelector("img");
-          sendResponse({ imageUrl: img ? img.src : null });
-      }
-  }); */
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "captureImage") {

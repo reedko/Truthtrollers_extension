@@ -1,18 +1,18 @@
 const path = require("path");
 
-
 module.exports = {
   entry: {
-    content: "./public/content.js", // Content script
-    popup: "./src/index.tsx", // React Popup component
+    content: "./src/content.js", // Content script
+    popup: "./src/components/Popup.tsx", // React Popup component
   },
   output: {
     path: path.resolve(__dirname, "public"),
-    filename: "[name].js",  // Will output `content.js` and `popup.js`
+    filename: "[name].js", // Will output `content.js` and `popup.js`
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js"],
   },
+  mode: "production",
   module: {
     rules: [
       {
@@ -23,20 +23,20 @@ module.exports = {
       {
         test: /\.css$/,
         use: ["style-loader", "css-loader"], // Ensure CSS is bundled
-            },
+      },
       {
         test: /\.(jpe?g|png|gif|svg)$/i,
         use: [
           {
-            loader: 'file-loader',
+            loader: "file-loader",
             options: {
               query: {
-                name:'assets/[name].[ext]'
-              }
-            }
+                name: "assets/[name].[ext]",
+              },
+            },
           },
           {
-            loader: 'image-webpack-loader',
+            loader: "image-webpack-loader",
             options: {
               query: {
                 mozjpeg: {
@@ -47,10 +47,11 @@ module.exports = {
                 },
                 optipng: {
                   optimizationLevel: 7,
-                }
-              }
-            }
-          }]
+                },
+              },
+            },
+          },
+        ],
       },
     ],
   },

@@ -13,7 +13,7 @@ const resizeImage = (newHeight: number, imgSource: string) => {
     <div>
       <img
         className="popup-image"
-        src={chrome.runtime.getURL(imgSource)}
+        src={imgSource}
         style={{ width: `${newWidth}px`, height: `${newHeight}px` }}
       />
     </div>
