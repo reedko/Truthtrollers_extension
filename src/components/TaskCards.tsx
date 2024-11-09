@@ -13,7 +13,7 @@ import {
   Grid,
   Center,
 } from "@chakra-ui/react";
-import { Task } from "../entities/useTask"; // Import the Task type
+import { Task } from "../entities/Task"; // Import the Task type
 import { BiChevronDown } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
 

@@ -1,19 +1,23 @@
-import { useState, useEffect } from 'react';
-import { Task } from '../entities/useTask'; // Adjust the import as necessary
+import { useState, useEffect } from "react";
+import { Task } from "../entities/Task"; // Adjust the import as necessary
 
 const useTopics = (tasks: Task[]) => {
-    const [topics, setTopics] = useState<string[]>([]);
-    const [subtopics, setSubtopics] = useState<string[]>([]);
+  const [topics, setTopics] = useState<string[]>([]);
+  const [subtopics, setSubtopics] = useState<string[]>([]);
 
-    useEffect(() => {
-        const uniqueTopics = Array.from(new Set(tasks.map(task => task.topic))).filter(Boolean);
-        const uniqueSubtopics = Array.from(new Set(tasks.map(task => task.subtopic))).filter(Boolean);
-        
-        setTopics(uniqueTopics);
-        setSubtopics(uniqueSubtopics);
-    }, [tasks]);
+  useEffect(() => {
+    const uniqueTopics = Array.from(
+      new Set(tasks.map((task) => task.topic))
+    ).filter(Boolean);
+    const uniqueSubtopics = Array.from(
+      new Set(tasks.map((task) => task.subtopic))
+    ).filter(Boolean);
 
-    return { topics, subtopics };
+    setTopics(uniqueTopics);
+    setSubtopics(uniqueSubtopics);
+  }, [tasks]);
+
+  return { topics, subtopics };
 };
 
 export default useTopics;

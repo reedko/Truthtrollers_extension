@@ -1,7 +1,7 @@
 import "./Popup.css";
 import resizeImage from "../services/image-url";
 import { Image, ChakraProvider } from "@chakra-ui/react";
-import { Task } from "../entities/useTask";
+import { Task } from "../entities/Task";
 import React, { useEffect, useState } from "react";
 import TaskCard from "./TaskCard";
 import ReactDOM from "react-dom/client";
@@ -22,57 +22,17 @@ const Popup: React.FC = () => {
       setPageUrl(currentUrl);
       setIsContentDetected(detected);
 
-      console.log("Task loaded from global context:", currentTask);
+      console.log("Task loaded from global context:", currentTask, pageUrl);
+    } else {
+      setPageUrl(currentUrl);
+      console.log("NO Task loaded from global context:", currentTask, pageUrl);
     }
   }, []);
-
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-
-  const handleCaptureImage = () => {
-    chrome.runtime.sendMessage({ action: "captureImage" }, (response) => {
-      if (response && response.imageUrl) {
-        setImageUrl(response.imageUrl);
-      } else {
-        console.error("Failed to capture image");
-      }
-    });
-  };
-  const handleScrape = async () => {
-    handleCaptureImage();
-    if (!imageUrl) {
-      console.log("No image URL found");
-      return;
-    }
-
-    // Send task data, including the image URL, to the backend
-    const taskData = {
-      task_name: pageUrl || "New Task",
-      url: pageUrl,
-      media_source: "Auto-detected source",
-      topic: "General",
-      subtopic: "N/A", // Send the captured image URL
-      users: "",
-      details: pageUrl,
-      thumbnail_url: imageUrl,
-    };
-
-    try {
-      const response = await fetch("http://localhost:5001/api/scrape", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(taskData),
-      });
-      const data = await response.json();
-      console.log("Task added with ID:", data.task_id);
-    } catch (error) {
-      console.error("Error adding task:", error);
-    }
-  };
 
   return (
     <ChakraProvider>
       <div>
-        <TaskCard task={task} />
+        <TaskCard task={task} pageUrl={pageUrl} />
       </div>
     </ChakraProvider>
   );

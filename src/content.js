@@ -10,6 +10,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-setTimeout(() => {
-  chrome.runtime.sendMessage({ action: "checkContent" });
-}, 5000);
+window.onload = function () {
+  console.log("Page loaded, running checkContent...");
+  chrome.runtime.sendMessage({ action: "checkContent", forceVisible: false });
+};
+/* setTimeout(() => {
+  chrome.runtime.sendMessage({ action: "checkContent", forceVisible: false });
+}, 5000); */

@@ -19,6 +19,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "checkContent") {
+    const { forceVisible } = message;
+    console.log("fv1", forceVisible);
     // Get the active tab's URL
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       if (chrome.runtime.lastError) {
@@ -45,6 +47,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         );
 
         const data = await response.json();
+
         const isDetected = data.exists && data.task.progress === "Completed";
         const task = data.exists ? data.task : null;
 
@@ -52,7 +55,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         chrome.scripting.executeScript(
           {
             target: { tabId: sender.tab.id },
-            func: (task, url, isDetected) => {
+            func: (task, url, isDetected, forceVisible) => {
               // Set global variables in the tab context
               window.currentTabTask = task;
               window.currentTabUrl = url;
@@ -63,11 +66,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               if (!popupRoot) {
                 popupRoot = document.createElement("div");
                 popupRoot.id = "popup-root";
-                popupRoot.className = isDetected
-                  ? "task-card-visible"
-                  : "task-card-hidden"; // Initially hidden
                 document.body.appendChild(popupRoot);
               }
+              console.log("fv2", forceVisible);
+              popupRoot.className =
+                isDetected || forceVisible
+                  ? "task-card-visible"
+                  : "task-card-hidden"; // Initially visible
             },
             args: [task, url, isDetected],
           },
