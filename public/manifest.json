@@ -3,7 +3,7 @@
   "name": "YouTube String Detector",
   "version": "1.0",
   "description": "Detects specific strings in YouTube URLs or page content",
-  "permissions": ["tabs", "activeTab", "scripting"],
+  "permissions": ["tabs", "activeTab", "scripting", "webNavigation"],
   "host_permissions": [
     "https://*.youtube.com/*",
     "http://*/*",

@@ -1,5 +1,15 @@
 // Listen for messages from content.js
 // background.js
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  // Check if the tab's URL contains "youtube.com" and if the URL has changed
+
+  // Send a message to re-check the content
+  chrome.tabs.sendMessage(tabId, {
+    action: "triggerCheckContent",
+    forceVisible: false,
+  });
+});
+
 chrome.action.onClicked.addListener((tab) => {
   chrome.tabs.sendMessage(tab.id, { action: "toggleTaskCard" });
 });
@@ -69,12 +79,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 document.body.appendChild(popupRoot);
               }
               console.log("fv2", forceVisible);
-              popupRoot.className =
-                isDetected || forceVisible
-                  ? "task-card-visible"
-                  : "task-card-hidden"; // Initially visible
+              console.log("isDetected:", isDetected);
+              console.log("forceVisible:", forceVisible);
+              if (isDetected || forceVisible) {
+                popupRoot.className = "task-card-visible";
+                console.log("fv3", isDetected);
+                console.log("fv31", isDetected || forceVisible);
+              } else {
+                popupRoot.className = "task-card-hidden"; // Initially visible
+                console.log("fv4", isDetected);
+              }
             },
-            args: [task, url, isDetected],
+            args: [task, url, isDetected, forceVisible],
           },
           () => {
             if (chrome.runtime.lastError) {
@@ -105,7 +121,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "captureImage") {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const currentUrl = tabs[0].url;
-      console.log(currentUrl);
+      console.log("test1");
       if (tabs[0].id) {
         console.log("Current URL:", currentUrl);
 

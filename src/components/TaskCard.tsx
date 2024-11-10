@@ -40,6 +40,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, pageUrl }) => {
     task && task.thumbnail ? chrome.runtime.getURL(task.thumbnail) : "";
   const meter = chrome.runtime.getURL("/assets/images/meter3.png");
   const logo = chrome.runtime.getURL("/assets/images/miniLogo.png");
+
   return (
     <Box className="popup-box" width="300px">
       <VStack spacing={3} align="start">
@@ -105,10 +106,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, pageUrl }) => {
                   bg="cyan.100"
                   color="black"
                   onClick={() => {
-                    // Close the popup by removing the root element
+                    // Find the popupRoot element
                     const popupRoot = document.getElementById("popup-root");
                     if (popupRoot) {
-                      popupRoot.remove();
+                      popupRoot.classList.add("task-card-hidden");
+                      popupRoot.classList.remove("task-card-visible");
                     }
                   }}
                 >
@@ -125,7 +127,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, pageUrl }) => {
             <Grid templateRows="repeat(2, 1fr)">
               <GridItem>
                 <Text color="gray.600" fontSize="sm">
-                  This document has not been added to Truthtroller.
+                  This document has not been added to Truthtrollers.
                 </Text>
               </GridItem>
               <GridItem>
@@ -148,10 +150,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, pageUrl }) => {
                   bg="cyan.100"
                   color="black"
                   onClick={() => {
-                    // Close the popup by removing the root element
+                    // Find the popupRoot element
                     const popupRoot = document.getElementById("popup-root");
                     if (popupRoot) {
-                      popupRoot.remove();
+                      popupRoot.classList.add("task-card-hidden");
+                      popupRoot.classList.remove("task-card-visible");
                     }
                   }}
                 >
