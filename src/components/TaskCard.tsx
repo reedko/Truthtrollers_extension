@@ -36,6 +36,7 @@ interface TaskCardProps {
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, pageUrl }) => {
   const { handleScrape } = useTask();
+
   const imageUrl =
     task && task.thumbnail ? chrome.runtime.getURL(task.thumbnail) : "";
   const meter = chrome.runtime.getURL("/assets/images/meter3.png");

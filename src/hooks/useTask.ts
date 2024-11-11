@@ -29,10 +29,7 @@ export const useTask = () => {
 
         if (!imageUrl) {
           console.log("No image URL found.");
-          setImageUrl(chrome.runtime.getURL("assets/ttlogo11.png"));
           return;
-        } else {
-          console.log("IMG", imageUrl);
         }
 
         // Send task data, including the image URL, to the backend
@@ -73,7 +70,7 @@ export const useTask = () => {
               action: "checkContent",
               forceVisible: true,
             });
-          }, 1000);
+          }, 2000);
         } catch (error) {
           console.error("Error adding task:", error);
         }

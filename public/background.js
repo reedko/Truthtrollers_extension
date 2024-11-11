@@ -2,12 +2,13 @@
 // background.js
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // Check if the tab's URL contains "youtube.com" and if the URL has changed
-
-  // Send a message to re-check the content
-  chrome.tabs.sendMessage(tabId, {
-    action: "triggerCheckContent",
-    forceVisible: false,
-  });
+  if (changeInfo.status === "complete" && tab.url) {
+    // Send a message to re-check the content
+    chrome.tabs.sendMessage(tabId, {
+      action: "triggerCheckContent",
+      forceVisible: false,
+    });
+  }
 });
 
 chrome.action.onClicked.addListener((tab) => {
