@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Text,
@@ -11,10 +11,11 @@ import {
   Progress,
   Grid,
 } from "@chakra-ui/react";
-import { Task } from "../entities/Task"; // Import the Task interface if needed
+// Import the Task interface if needed
 import "./Popup.css";
+import useTaskStore from "../store/useTaskStore"; // Import Zustand store
 import resizeImage from "../services/image-url";
-import { useTask } from "../hooks/useTask";
+//import { useTask } from "../hooks/useTask"; // Import useTask here
 
 const getProgressColor = (progress: string | null) => {
   switch (progress) {
@@ -29,18 +30,32 @@ const getProgressColor = (progress: string | null) => {
   }
 };
 
-interface TaskCardProps {
-  task: Task | null;
-  pageUrl: string | null;
-}
+const TaskCard: React.FC = () => {
+  const { task, currentUrl } = useTaskStore(); // Hook to access the store values
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, pageUrl }) => {
-  const { handleScrape } = useTask();
+  useEffect(() => {
+    console.log("Updated task:", task);
+    console.log("Updated currentUrl:", currentUrl);
+  }, [task, currentUrl]);
+  // Declare the handleScrape function inside TaskCard
+  //const { handleScrape } = useTask(); // Use the useTask hook here
 
   const imageUrl =
     task && task.thumbnail ? chrome.runtime.getURL(task.thumbnail) : "";
   const meter = chrome.runtime.getURL("/assets/images/meter3.png");
   const logo = chrome.runtime.getURL("/assets/images/miniLogo.png");
+
+  // Function to handle "Add" button click
+  const handleAddClick = () => {
+    console.log("Handle Add clicked with pageUrl:", currentUrl);
+
+    // Call the handleScrape function only when the button is clicked
+    if (currentUrl) {
+      //handleScrape(currentUrl); // Trigger handleScrape with the pageUrl when the button is clicked
+    } else {
+      console.log("No page URL provided.");
+    }
+  };
 
   return (
     <Box className="popup-box" width="300px">
@@ -142,7 +157,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, pageUrl }) => {
                   variant="surface"
                   bg="cyan.100"
                   color="black"
-                  onClick={() => handleScrape(pageUrl)}
+                  onClick={handleAddClick} // Use the handleAddClick here to call handleScrape
                 >
                   <div>Add</div>
                 </Button>

@@ -228,6 +228,7 @@ app.post("/api/scrape", async (req, res) => {
         imageFilename
       );
 
+      console.log(imageFilename);
       try {
         // Step 2: Download and resize the image
         const response = await axios.get(thumbnail_url, {

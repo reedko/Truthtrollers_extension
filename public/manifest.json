@@ -3,7 +3,7 @@
   "name": "YouTube String Detector",
   "version": "1.0",
   "description": "Detects specific strings in YouTube URLs or page content",
-  "permissions": ["tabs", "activeTab", "scripting", "webNavigation"],
+  "permissions": ["tabs", "activeTab", "scripting", "webNavigation", "storage"],
   "host_permissions": [
     "https://*.youtube.com/*",
     "http://*/*",
@@ -11,7 +11,8 @@
     "http://localhost/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "action": {
     "default_icon": {

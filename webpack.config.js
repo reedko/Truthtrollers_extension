@@ -1,9 +1,11 @@
 const path = require("path");
 
 module.exports = {
+  target: "web",
   entry: {
     content: "./src/content.js", // Content script
     popup: "./src/components/Popup.tsx", // React Popup component
+    background: "./src/background.js",
   },
   output: {
     path: path.resolve(__dirname, "public"),
@@ -12,6 +14,7 @@ module.exports = {
   resolve: {
     extensions: [".ts", ".tsx", ".js"],
   },
+
   mode: "production",
   module: {
     rules: [

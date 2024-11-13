@@ -1,30 +1,35 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import useMainHeadline from "./useMainHeadline";
+import createTask from "../services/createTask";
+import { extractVideoIdFromUrl } from "../services/parseYoutubeUrl";
+import { getTopicsFromText } from "../services/ldaTopics";
+import useUrlDetailsExtraction from "../hooks/useUrlDetailsExtraction"; // Import custom hook
 
 export const useTask = () => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  interface CaptureImageResponse {
-    imageUrl?: string;
-  }
   const [searchUrl, setSearchUrl] = useState<string | null>(null);
-
   const mainHeadline = useMainHeadline(searchUrl);
-
+  console.log("useTask executed", searchUrl);
   const handleCaptureImage = (
-    callback: (response: CaptureImageResponse) => void
+    callback: (response: { imageUrl?: string }) => void
   ): void => {
     chrome.runtime.sendMessage(
       { action: "captureImage" },
-      (response: CaptureImageResponse) => {
+      (response: { imageUrl?: string }) => {
         callback(response);
       }
     );
   };
+  const videoId = extractVideoIdFromUrl(searchUrl || undefined);
+
+  const { content, loading, error } = useUrlDetailsExtraction(
+    searchUrl || undefined, // Pass undefined if searchUrl is null
+    videoId ? videoId : undefined // Only pass videoId if it's a valid string, otherwise pass undefined
+  );
 
   useEffect(() => {
-    if (mainHeadline) {
-      // Proceed with task creation when mainHeadline is available
-      handleCaptureImage((response) => {
+    if (mainHeadline && content) {
+      handleCaptureImage(async (response) => {
         let imageUrl = response.imageUrl;
 
         if (!imageUrl) {
@@ -32,13 +37,15 @@ export const useTask = () => {
           return;
         }
 
-        // Send task data, including the image URL, to the backend
+        // If the content is ready, process it through LDA for topic modeling
+        const topics = await getTopicsFromText(content); // Get topics from LDA
+
         const taskData = {
           task_name: mainHeadline || "New Task",
           url: searchUrl,
           media_source: "Auto-detected source",
-          topic: "General",
-          subtopic: "N/A",
+          topic: topics.length ? topics[0] : "General", // Use the first topic
+          subtopic: topics.length > 1 ? topics[1] : "N/A", // Assign subtopic
           users: "",
           details: searchUrl,
           thumbnail_url: imageUrl,
@@ -46,44 +53,33 @@ export const useTask = () => {
           progress: "unassigned",
         };
 
-        // Send taskData to your backend here
+        // Create task using the API service
+        createTask(taskData);
 
-        try {
-          fetch("http://localhost:5001/api/scrape", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(taskData),
-          })
-            .then((response) => response.text())
-            .then((text) => console.log("Response text:", text));
-
-          const popupRoot = document.getElementById("popup-root");
-          if (popupRoot) {
-            console.log("re ovinng popup");
-            popupRoot.remove();
-            console.log("re oveed popup");
-          }
-          setTimeout(() => {
-            // Send a message to re-check the content
-
-            chrome.runtime.sendMessage({
-              action: "checkContent",
-              forceVisible: true,
-            });
-          }, 2000);
-        } catch (error) {
-          console.error("Error adding task:", error);
+        // Close popup and re-check content
+        const popupRoot = document.getElementById("popup-root");
+        if (popupRoot) {
+          popupRoot.remove();
         }
+
+        setTimeout(() => {
+          chrome.runtime.sendMessage({
+            action: "checkContent",
+            forceVisible: true,
+          });
+        }, 3000);
       });
+    } else {
+      console.error("Error: No content or headline found.");
     }
-  }, [mainHeadline, searchUrl]);
+  }, [mainHeadline, content, searchUrl]);
 
   const handleScrape = (pageUrl: string | null) => {
-    if (!pageUrl) {
-      console.error("No page URL provided. Cannot scrape.");
-      return; // Early exit if pageUrl is null
+    if (pageUrl && pageUrl !== searchUrl) {
+      console.log("Scraping new URL:", pageUrl);
+      setSearchUrl(pageUrl);
     }
-    setSearchUrl(pageUrl);
   };
+
   return { handleScrape };
 };
