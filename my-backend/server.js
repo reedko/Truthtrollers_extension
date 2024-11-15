@@ -228,13 +228,13 @@ app.post("/api/scrape", async (req, res) => {
         imageFilename
       );
 
-      console.log(imageFilename);
+      console.log("image", imageFilename);
       try {
         // Step 2: Download and resize the image
         const response = await axios.get(thumbnail_url, {
           responseType: "arraybuffer",
         });
-        console.log(thumbnail_url);
+
         const buffer = Buffer.from(response.data, "binary");
 
         // Resize the image to 100px width using sharp

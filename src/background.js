@@ -1,11 +1,9 @@
 // Listen for messages from content.js
 // background.js
 import useTaskStore from "../src/store/useTaskStore";
-let isContentChecked = false;
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === "complete" && tab.url && !isContentChecked) {
-    isContentChecked = true;
+  if (changeInfo.status === "complete" && tab.url) {
     chrome.tabs.sendMessage(tabId, {
       action: "triggerCheckContent",
       forceVisible: false,
@@ -70,7 +68,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         //const useStore = require("../src/store/useTaskStore").default;
 
         useTaskStore.getState().setTask(task);
-        console.log(task);
+        console.log("GETTING STATE", task);
 
         useTaskStore.getState().setCurrentUrl(url);
         useTaskStore.getState().setContentDetected(isDetected);
@@ -89,6 +87,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             func: (isDetected, forceVisible) => {
               // Check if the popup-root div exists, if not, create it
               let popupRoot = document.getElementById("popup-root");
+
+              if (popupRoot) {
+                popupRoot.remove();
+              }
+              popupRoot = document.getElementById("popup-root");
               if (!popupRoot) {
                 popupRoot = document.createElement("div");
                 popupRoot.id = "popup-root";

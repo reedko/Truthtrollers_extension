@@ -1,4 +1,5 @@
 const path = require("path");
+const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
 
 module.exports = {
   target: "web",
@@ -12,10 +13,17 @@ module.exports = {
     filename: "[name].js", // Will output `content.js` and `popup.js`
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js"],
+    extensions: [".js", ".jsx", ".ts", ".tsx"],
   },
+  plugins: [
+    new ReactRefreshWebpackPlugin(), // Add React Fast Refresh Plugin
+  ],
 
-  mode: "production",
+  devServer: {
+    hot: true, // Enable hot module replacement
+    open: true, // Open the browser on server start
+  },
+  mode: "development",
   module: {
     rules: [
       {
@@ -31,11 +39,15 @@ module.exports = {
         test: /\.(jpe?g|png|gif|svg)$/i,
         use: [
           {
-            loader: "file-loader",
+            loader: "babel-loader",
             options: {
               query: {
                 name: "assets/[name].[ext]",
               },
+              presets: ["@babel/preset-env", "@babel/preset-react"],
+              plugins: [
+                "react-refresh/babel", // Add React Refresh babel plugin
+              ],
             },
           },
           {

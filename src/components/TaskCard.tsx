@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Text,
@@ -15,7 +15,7 @@ import {
 import "./Popup.css";
 import useTaskStore from "../store/useTaskStore"; // Import Zustand store
 import resizeImage from "../services/image-url";
-//import { useTask } from "../hooks/useTask"; // Import useTask here
+import { useTaskScraper } from "../hooks/useTaskScraper"; // Import useTask here
 
 const getProgressColor = (progress: string | null) => {
   switch (progress) {
@@ -32,28 +32,21 @@ const getProgressColor = (progress: string | null) => {
 
 const TaskCard: React.FC = () => {
   const { task, currentUrl } = useTaskStore(); // Hook to access the store values
+  const { loading, error, scrapeTask } = useTaskScraper(); // Use scraper hook
 
-  useEffect(() => {
-    console.log("Updated task:", task);
-    console.log("Updated currentUrl:", currentUrl);
-  }, [task, currentUrl]);
-  // Declare the handleScrape function inside TaskCard
-  //const { handleScrape } = useTask(); // Use the useTask hook here
+  console.log("Updated task:", task);
+  console.log("Updated currentUrl:", currentUrl);
 
   const imageUrl =
     task && task.thumbnail ? chrome.runtime.getURL(task.thumbnail) : "";
   const meter = chrome.runtime.getURL("/assets/images/meter3.png");
   const logo = chrome.runtime.getURL("/assets/images/miniLogo.png");
 
-  // Function to handle "Add" button click
-  const handleAddClick = () => {
-    console.log("Handle Add clicked with pageUrl:", currentUrl);
-
-    // Call the handleScrape function only when the button is clicked
+  const handleAddTask = () => {
     if (currentUrl) {
-      //handleScrape(currentUrl); // Trigger handleScrape with the pageUrl when the button is clicked
+      scrapeTask(currentUrl); // Trigger scraping with the current URL
     } else {
-      console.log("No page URL provided.");
+      console.error("No URL provided.");
     }
   };
 
@@ -157,7 +150,8 @@ const TaskCard: React.FC = () => {
                   variant="surface"
                   bg="cyan.100"
                   color="black"
-                  onClick={handleAddClick} // Use the handleAddClick here to call handleScrape
+                  onClick={handleAddTask}
+                  disable={loading} // Use the handleAddClick here to call handleScrape
                 >
                   <div>Add</div>
                 </Button>
