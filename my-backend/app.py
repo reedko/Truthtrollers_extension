@@ -6,6 +6,11 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import string
 from flask import request
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
+
+from services.removeNames import remove_person_names  # Import your function
 
 
 
@@ -26,14 +31,11 @@ stop_words = set(stopwords.words('english') + list(string.punctuation))
 @app.route('/api/analyze', methods=['POST'])
 def analyze_text():
     # Get content from the request
-    content = request.json.get('content')
-    import spacy
-nlp = spacy.load("en_core_web_sm")
+    contentWithNames = request.json.get('content')
+    content=remove_person_names(contentWithNames)
 
-text = "Matt Gaetz spoke about El Salvador prisons."
-doc = nlp(text)
-processed_text = " ".join([token.text if token.ent_type_ != "PERSON" else "[PERSON]" for token in doc])
-print(processed_text)
+
+
 
     if not content:
         return jsonify({"error": "No content provided"}), 400
@@ -46,30 +48,29 @@ print(processed_text)
     dictionary = corpora.Dictionary([tokens])
     corpus = [dictionary.doc2bow(tokens)]
 
-    # Apply LDA model
-    lda_model = gensim.models.LdaMulticore(corpus, num_topics=3, id2word=dictionary, passes=15)
+  # Apply LDA model
+    lda_model = gensim.models.LdaMulticore(corpus, num_topics=5, id2word=dictionary, passes=15)
     topics = lda_model.print_topics(num_words=3)
 
-
-    # Extract the highest-probability and second-highest-probability words
-    topic_descriptions = []
+    # Parse probabilities and words from the topics
+    word_probabilities = {}
     for topic in topics:
-        topic_words = topic[1]  # Get the string like '0.500*"test" + 0.500*"content"'
-        words = [
-            word.split('*')[1].strip().strip('"') for word in topic_words.split('+')
-        ]  # Extract words only
-        topic_descriptions.append(words)  # Add list of words for each topic
+        topic_details = topic[1].split('+')  # Split into components like '0.500*"word"'
+        for detail in topic_details:
+            weight, word = detail.split('*')
+            word = word.strip().strip('"')  # Extract word
+            weight = float(weight.strip())  # Convert weight to float
+            if word not in word_probabilities or word_probabilities[word] < weight:
+                word_probabilities[word] = weight  # Update with max weight
+        print(topic)
+    # Sort words by probabilities (highest first)
+    sorted_words = sorted(word_probabilities.items(), key=lambda x: x[1], reverse=True)
 
-    # Pick the first topic's top two words
-    if topic_descriptions:
-        main_topic_words = topic_descriptions[0]  # First topic's word list
-        topic = main_topic_words[0] if len(main_topic_words) > 0 else None
-        subtopic = main_topic_words[1] if len(main_topic_words) > 1 else None
-    else:
-        topic, subtopic = None, None
+    # Extract topic and subtopic
+    topic = sorted_words[0][0] if len(sorted_words) > 0 else None  # Highest-probability word
+    subtopic = sorted_words[1][0] if len(sorted_words) > 1 else None  # Second-highest-probability word
 
     # Return the extracted topic and subtopic
     return jsonify({"topic": topic, "subtopic": subtopic})
-
 if __name__ == '__main__':
     app.run(debug=True)
