@@ -26,3 +26,4 @@ dist/
 # Other Python-related system files
 *.pyo
 *.pyc
+.env
