@@ -27,3 +27,4 @@ dist/
 *.pyo
 *.pyc
 .env
+popup.js
