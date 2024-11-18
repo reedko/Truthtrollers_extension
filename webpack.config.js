@@ -1,5 +1,7 @@
 const path = require("path");
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+const webpack = require("webpack"); // Add this line if missing
+const Dotenv = require("dotenv-webpack");
 
 module.exports = {
   target: "web",
@@ -17,6 +19,14 @@ module.exports = {
   },
   plugins: [
     new ReactRefreshWebpackPlugin(), // Add React Fast Refresh Plugin
+    /* new webpack.DefinePlugin({
+      "process.env.REACT_APP_OPENAI_API_KEY": JSON.stringify(
+        process.env.REACT_APP_OPENAI_API_KEY
+      ),
+    }), */
+    new Dotenv({
+      path: path.resolve(__dirname, "./my-backend/.env"), // Path to your .env file
+    }),
   ],
 
   devServer: {

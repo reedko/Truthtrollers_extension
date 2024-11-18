@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["chrome"] // Add chrome types for the API
+    "types": ["chrome", "node"] // Add chrome types for the API
   },
   "include": ["src/**/*"]
 }

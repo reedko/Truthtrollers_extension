@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { getMainHeadline } from "../services/getMainHeadline"; // New headline extraction function
 import { extractUrlDetails } from "../services/urlDetailsExtraction"; // Content extraction logic
-import { getTopicsFromText } from "../services/ldaTopics"; // LDA service for topics
+import { getTopicsFromText } from "../services/openaiTopics";
 import createTask from "../services/createTask"; // Task creation service
 import { extractVideoIdFromUrl } from "../services/parseYoutubeUrl"; // Helper for YouTube video IDs
 
@@ -27,8 +27,10 @@ export const useTaskScraper = () => {
       }
 
       // Step 3: Extract topics from content
-      const { topic, subtopic } = await getTopicsFromText(content);
 
+      const { generalTopic, specificTopics } = await getTopicsFromText(content);
+      console.log("topics:", generalTopic);
+      console.log("locations:", specificTopics);
       // Step 4: Capture image (if applicable)
       let imageUrl = "";
       await new Promise<void>((resolve) => {
@@ -55,8 +57,8 @@ export const useTaskScraper = () => {
         progress: "Unassigned",
         users: "",
         details: url,
-        topic,
-        subtopic,
+        topic: generalTopic,
+        subtopic: specificTopics[0] ? specificTopics[0] : "",
         thumbnail_url: imageUrl,
       };
 

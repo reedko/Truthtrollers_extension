@@ -1,2 +1,4 @@
-"python.terminal.activateEnvironment": false{
+{
+  "python.defaultInterpreterPath": "\"/Users/reedko/React/Truthtrollers demo/Truthtrollers_extension/my-backend/venv/bin/python3\"",
+  "python.venvPath": "/Users/reedko/React/Truthtrollers demo/Truthtrollers_extension/my-backend/venv"
 }

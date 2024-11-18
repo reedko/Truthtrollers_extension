@@ -12,7 +12,11 @@
   ],
   "background": {
     "service_worker": "background.js",
-    "type": "module"
+    "type": "module",
+    "compilerOptions": {
+      "module": "ESNext",
+      "esModuleInterop": true
+    }
   },
   "action": {
     "default_icon": {
