@@ -3,11 +3,13 @@
 import useTaskStore from "../src/store/useTaskStore";
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === "complete" && tab.url) {
-    chrome.tabs.sendMessage(tabId, {
-      action: "triggerCheckContent",
-      forceVisible: false,
-    });
+  if (!tab.url.startsWith("chrome://")) {
+    if (changeInfo.status === "complete" && tab.url) {
+      chrome.tabs.sendMessage(tabId, {
+        action: "triggerCheckContent",
+        forceVisible: false,
+      });
+    }
   }
 });
 
