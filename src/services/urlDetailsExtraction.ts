@@ -6,7 +6,7 @@ import { Readability } from "@mozilla/readability";
 export const getYoutubeTranscript = async (videoId: string | null) => {
   if (!videoId) return null;
   try {
-    const transcript = await YouTubeTranscriptApi.getTranscript(videoId);
+    const transcript = await YouTubeTranscriptApi.getYoutubeTranscript(videoId);
     return transcript.map((entry: { text: any }) => entry.text).join(" "); // Combine transcript text into one string
   } catch (error) {
     console.error("Error fetching YouTube transcript:", error);
@@ -36,7 +36,7 @@ export const extractUrlDetails = async (
 ) => {
   if (videoId) {
     // Try to get content from YouTube transcript
-    return await getYoutubeTranscript(videoId);
+    return videoId; //await getYoutubeTranscript(videoId);
   } else if (url) {
     // Try to get content from webpage
     console.log("Url in extratUrlDetails", url);

@@ -21,7 +21,7 @@ export const useTaskScraper = () => {
       // Step 2: Extract content and YouTube transcript
       const videoId = extractVideoIdFromUrl(url); // Extract YouTube video ID
       console.log("videoId", videoId);
-      const content = await extractUrlDetails(url, videoId); // Extract content or transcript
+      const content = await extractUrlDetails(url, mainHeadline); // Extract content or transcript
       if (!content) {
         throw new Error("Failed to extract content.");
       }
