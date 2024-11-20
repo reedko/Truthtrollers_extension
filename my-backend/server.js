@@ -24,6 +24,7 @@ const db = mysql.createConnection({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
+  multipleStatements: true,
 });
 
 const pool = mysql.createPool({
@@ -32,6 +33,7 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
+  multipleStatements: true,
 });
 
 db.connect((err) => {
@@ -181,12 +183,14 @@ app.post("/api/check-content", (req, res) => {
 });
 
 app.post("/api/scrape", async (req, res) => {
+  const util = require("util");
+  const query = util.promisify(db.query).bind(db);
   const {
     task_name,
     url,
     media_source,
     topic,
-    subtopic,
+    subtopics,
     users,
     details,
     thumbnail_url,
@@ -195,70 +199,85 @@ app.post("/api/scrape", async (req, res) => {
   } = req.body;
 
   // Step 1: Insert the task without the thumbnail path
-  const query =
-    "INSERT INTO tasks (task_name, url, media_source, topic, subtopic, users, details,assigned,progress) VALUES (?, ?, ?, ?, ?,?,?,?,?)";
-  db.query(
-    query,
-    [
-      task_name,
-      url,
-      media_source,
-      topic,
-      subtopic,
-      users,
-      details,
-      progress,
-      assigned,
-    ],
-    async (err, result) => {
-      if (err) {
-        console.error("Error inserting task:", err);
-        return res.status(500).send("Database error");
-      }
+  const callQuery = `CALL InsertTaskAndTopics(?, ?, ?, ?, ?, ?, ?, ?, ?, @taskId);`;
 
-      const taskId = result.insertId;
-      const imageFilename = `task_id_${taskId}.png`;
-      const imagePath = path.resolve(
-        __dirname,
-        "..",
-        "public",
-        "assets",
-        "images",
-        "tasks",
-        imageFilename
-      );
+  const params = [
+    task_name, // Task name
+    url, // URL
+    media_source, // Media source
+    topic, // Main topic
+    JSON.stringify(subtopics), // Subtopics as JSON string
+    users, // Users
+    details, // Task details
+    assigned, // Assigned status
+    progress, // Progress status
+  ];
 
-      console.log("image", imageFilename);
-      try {
-        // Step 2: Download and resize the image
-        const response = await axios.get(thumbnail_url, {
-          responseType: "arraybuffer",
-        });
-
-        const buffer = Buffer.from(response.data, "binary");
-
-        // Resize the image to 100px width using sharp
-        await sharp(buffer).resize({ width: 300 }).toFile(imagePath);
-
-        // Step 3: Update the task with the thumbnail path
-        //change thumbnail path from absolute to relative
-        const relativeImagePath = getRelativePath(imagePath);
-        const updateQuery = "UPDATE tasks SET thumbnail = ? WHERE task_id = ?";
-        db.query(updateQuery, [relativeImagePath, taskId], (updateErr) => {
-          if (updateErr) {
-            console.error("Error updating task with thumbnail:", updateErr);
-            return res.status(500).send("Database update error");
-          }
-
-          res.status(200).send({ success: true, task_id: taskId });
-        });
-      } catch (imageError) {
-        console.error("Error handling image:", imageError);
-        res.status(500).send("Image processing error");
-      }
+  try {
+    // Execute the procedure
+    await db.query(callQuery, params);
+  } catch (err) {
+    console.error("Error inserting task:", err);
+    return res.status(500).send("Database error during task insertion");
+  }
+  letTaskId = null;
+  try {
+    const fetchTaskIdQuery = "SELECT task_id FROM tasks WHERE url = ?";
+    const results = await query(fetchTaskIdQuery, [url]);
+    if (results.length === 0) {
+      throw new Error("Task ID not found");
     }
+
+    taskId = results[0].task_id;
+    console.log("Task successfully inserted with ID:", taskId);
+  } catch (err) {
+    console.log("Detailed Catch Error:", JSON.stringify(err, null, 2));
+    res.status(500).send("Database error during task ID fetch.");
+  }
+  const imageFilename = `task_id_${taskId}.png`;
+  const imagePath = path.resolve(
+    __dirname,
+    "..",
+    "public",
+    "assets",
+    "images",
+    "tasks",
+    imageFilename
   );
+
+  console.log("image", imageFilename);
+  try {
+    // Step 2: Download and resize the image
+    const response = await axios.get(thumbnail_url, {
+      responseType: "arraybuffer",
+    });
+
+    const buffer = Buffer.from(response.data, "binary");
+
+    try {
+      await sharp(buffer).resize({ width: 300 }).toFile(imagePath);
+      console.log("Image resized and saved to:", imagePath);
+    } catch (error) {
+      console.error("Error resizing image:", error);
+    }
+    // Step 3: Update the task with the thumbnail path
+    //change thumbnail path from absolute to relative
+    const relativeImagePath = getRelativePath(imagePath);
+    const updateQuery = "UPDATE tasks SET thumbnail = ? WHERE task_id = ?";
+    db.query(updateQuery, [relativeImagePath, taskId], (updateErr) => {
+      if (updateErr) {
+        console.error("Error updating task with thumbnail:", updateErr);
+        return res.status(500).send("Database update error");
+      }
+
+      res.status(200).send({ success: true, task_id: taskId });
+    });
+  } catch (imageError) {
+    console.error("Error handling image:", imageError);
+    res.status(500).send("Image processing error");
+  }
 });
+
 // Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

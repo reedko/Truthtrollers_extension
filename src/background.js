@@ -143,6 +143,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const currentUrl = tabs[0].url;
       console.log("test1");
+
       if (tabs[0].id) {
         console.log("Current URL:", currentUrl);
 
@@ -151,6 +152,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           sendResponse({ error: "Current URL is undefined" });
           return;
         }
+
         try {
           console.log("test2");
 
@@ -161,11 +163,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 console.log("test3");
                 let maxArea = 0;
                 let chosenImage = null;
+
                 if (!url) {
                   console.error("Passed URL is undefined inside func");
                   return null;
                 }
-                //capture youtube image thumbnail iff
+
+                // YouTube-specific thumbnail extraction
                 if (
                   url.indexOf("youtube.com") !== -1 &&
                   url.indexOf("/watch") !== -1
@@ -174,36 +178,68 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                   const videoId = urlObj.searchParams.get("v");
                   console.log(videoId);
                   if (videoId) {
-                    img.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-                    chosenImage = img;
+                    const youtubeThumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                    return youtubeThumbnail; // Return YouTube thumbnail URL immediately
                   }
                 }
 
-                // Example of capturing the first image found on the page
-                if (!chosenImage) {
-                  const images = document.querySelectorAll("img");
+                const parseSrcset = (srcset) => {
+                  if (!srcset) return null;
 
-                  images.forEach((img) => {
-                    if (
-                      img.offsetHeight &&
-                      img.offsetWidth &&
-                      img.offsetParent !== null
-                    ) {
-                      const area = img.offsetHeight * img.offsetWidth;
-                      if (area > maxArea) {
-                        maxArea = area;
-                        chosenImage = img;
-                      }
+                  // Define valid image extensions
+                  const validImageExtensions = /\.(jpg|jpeg|png|gif|webp)$/i;
+
+                  // Split srcset and process each entry
+                  const srcsetEntries = srcset.split(",").map((entry) => {
+                    let src = entry.trim().split(" ")[0]; // Get the URL part
+
+                    // Strip PHP-like processing or query prefixes
+                    if (src.includes("?")) {
+                      const cleanedSrc = src.split("?src=")[1] || src; // Keep only after "?" if exists
+                      src = cleanedSrc;
                     }
+
+                    // Remove any trailing parameters like `&w=1200`
+                    src = src.split("&")[0];
+
+                    // Return only if the src ends with a valid image extension
+                    return validImageExtensions.test(src) ? src : null;
                   });
-                }
-                return chosenImage ? chosenImage.src : null;
+
+                  // Return the first valid image URL or null
+                  return srcsetEntries.find((src) => src) || null;
+                };
+
+                // Extract the largest image based on src or srcset
+                const images = document.querySelectorAll("img");
+                images.forEach((img) => {
+                  const area = img.offsetHeight * img.offsetWidth;
+
+                  if (img.src && area > maxArea) {
+                    maxArea = area;
+                    chosenImage = img.src; // Prefer img.src if available
+                  } else if (img.srcset && area > maxArea) {
+                    const parsedSrc = parseSrcset(img.srcset);
+                    if (parsedSrc) {
+                      maxArea = area;
+                      chosenImage = parsedSrc;
+                    }
+                  }
+                });
+
+                return chosenImage || null;
               },
               args: [currentUrl],
             },
             (results) => {
-              const imageUrl = results[0].result;
-              sendResponse({ imageUrl });
+              const imageUrl = results[0]?.result;
+              if (imageUrl) {
+                console.log("Captured Image URL:", imageUrl);
+                sendResponse({ imageUrl });
+              } else {
+                console.error("No valid image found.");
+                sendResponse({ error: "No valid image found." });
+              }
             }
           );
         } catch (error) {
@@ -211,6 +247,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
       }
     });
+
     // This is necessary to indicate that sendResponse will be called asynchronously
     return true;
   }

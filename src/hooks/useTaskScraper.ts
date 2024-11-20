@@ -58,7 +58,7 @@ export const useTaskScraper = () => {
         users: "",
         details: url,
         topic: generalTopic,
-        subtopic: specificTopics[0] ? specificTopics[0] : "",
+        subtopics: specificTopics,
         thumbnail_url: imageUrl,
       };
 

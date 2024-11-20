@@ -41,5 +41,8 @@
     "storage": "^0.2.0",
     "youtube-transcript-api": "^1.1.2",
     "zustand": "^5.0.1"
-  }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

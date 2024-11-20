@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
-console.log("API Key:", apiKey); // Ensure this is working */
+
 export const getTopicsFromText = async (content: string) => {
   try {
     const response = await axios.post(
