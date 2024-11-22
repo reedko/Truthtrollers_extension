@@ -38,8 +38,8 @@ const TaskCard: React.FC = () => {
 
   const imageUrl =
     task && task.thumbnail ? chrome.runtime.getURL(task.thumbnail) : "";
-  const meter = chrome.runtime.getURL("/assets/images/meter3.png");
-  const logo = chrome.runtime.getURL("/assets/images/miniLogo.png");
+  const meter = chrome.runtime.getURL("../assets/images/meter3.png");
+  const logo = chrome.runtime.getURL("../assets/images/miniLogo.png");
 
   const handleAddTask = () => {
     if (currentUrl) {

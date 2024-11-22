@@ -25,7 +25,7 @@ module.exports = {
       ),
     }), */
     new Dotenv({
-      path: path.resolve(__dirname, "./my-backend/.env"), // Path to your .env file
+      path: path.resolve(__dirname, "./backend/.env"), // Path to your .env file
     }),
   ],
 

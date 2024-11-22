@@ -4,7 +4,8 @@ import { extractUrlDetails } from "../services/urlDetailsExtraction"; // Content
 import { getTopicsFromText } from "../services/openaiTopics";
 import createTask from "../services/createTask"; // Task creation service
 import { extractVideoIdFromUrl } from "../services/parseYoutubeUrl"; // Helper for YouTube video IDs
-
+import { fetchIconForTopic } from "../services/fetchIconForTopic.js";
+import checkAndDownloadTopicIcon from "../services/checkAndDownloadTopicIcon";
 export const useTaskScraper = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +30,18 @@ export const useTaskScraper = () => {
       // Step 3: Extract topics from content
 
       const { generalTopic, specificTopics } = await getTopicsFromText(content);
+      // Fetch the icon for the topic
+      console.log("gtop:", generalTopic);
+      const iconThumbnailUrl = await checkAndDownloadTopicIcon(generalTopic);
+
+      if (iconThumbnailUrl) {
+        console.log(
+          `Fetched and saved icon for ${generalTopic}: ${iconThumbnailUrl}`
+        );
+      } else {
+        console.log(`Topic "${generalTopic}" already exists. No icon fetched.`);
+      }
+
       console.log("topics:", generalTopic);
       console.log("locations:", specificTopics);
       // Step 4: Capture image (if applicable)
@@ -60,6 +73,7 @@ export const useTaskScraper = () => {
         topic: generalTopic,
         subtopics: specificTopics,
         thumbnail_url: imageUrl,
+        iconThumbnailUrl: iconThumbnailUrl ? iconThumbnailUrl : null,
       };
 
       // Step 6: Create task in the database
